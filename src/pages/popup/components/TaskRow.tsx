@@ -7,7 +7,7 @@ import TaskItemForm from "./TaskItemForm";
 type Props = { task: AppStore["taskList"]["state"][number] };
 export default function TaskRow(props: Props) {
   const {
-    taskList: { update: updateTask },
+    taskList: { update: updateTask, removeTask },
   } = useAppContext();
   const [isEditing, setIsEditing] = createSignal(false);
 
@@ -25,7 +25,7 @@ export default function TaskRow(props: Props) {
           description={props.task.description}
           duration={props.task.duration}
           update={() => setIsEditing(true)}
-          remove={() => {}}
+          remove={() => removeTask(props.task.id)}
         />
       )}
     </>

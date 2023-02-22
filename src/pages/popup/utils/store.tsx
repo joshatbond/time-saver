@@ -39,6 +39,9 @@ export const store: AppStore = {
   taskList: {
     state: tasksState,
     clear: () => setTasksState([]),
+    removeTask: (id) => {
+      setTasksState((p) => p.filter((t) => t.id !== id));
+    },
     update: ({ description, duration, id }) => {
       setTasksState(
         (task) => task.id === id,
@@ -66,6 +69,7 @@ export type AppStore = {
   taskList: {
     state: TasksState;
     clear: () => void;
+    removeTask: (id: string) => void;
     update: ({
       id,
       description,
