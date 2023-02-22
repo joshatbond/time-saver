@@ -13,7 +13,6 @@ const manifest = defineManifest(async () => ({
   name: packageJson.displayName ?? packageJson.name,
   version: `${major}.${minor}.${patch}.${label}`,
   description: packageJson.description,
-  background: { service_worker: "src/pages/background/index.ts" },
   action: {
     default_popup: "src/pages/popup/index.html",
     default_icon: "icons/inactive_timer.png",
