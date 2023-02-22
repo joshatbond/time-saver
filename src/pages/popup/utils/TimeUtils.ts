@@ -1,5 +1,5 @@
 export const HOURS = 3600000;
 
 export function durationToHours(duration: number) {
-  return (duration / HOURS).toFixed(2);
+  return (Math.round((duration * 4) / HOURS) / 4).toFixed(2);
 }
