@@ -2,7 +2,11 @@ import { createId } from "@paralleldrive/cuid2";
 import { produce } from "solid-js/store";
 import createLocalStore from "./createLocalStore";
 
-const defaultTimerState: TimerState = { isStarted: false, startedAt: null };
+const defaultTimerState: TimerState = {
+  isStarted: false,
+  startedAt: null,
+  description: "",
+};
 const defaultTasksState: TasksState = [];
 
 const [timerState, setTimerState] = createLocalStore(
@@ -17,13 +21,14 @@ const [tasksState, setTasksState] = createLocalStore(
 export const store: AppStore = {
   timer: {
     state: timerState,
+    updateTaskDescription: (description) => {
+      setTimerState(produce((p) => (p.description = description)));
+    },
     start: () => {
       setTimerState({ isStarted: true, startedAt: Date.now() });
       chrome.action.setIcon({ path: "/icons/active_timer.png" });
     },
     end: ({ description, duration }) => {
-      setTimerState({ isStarted: false, startedAt: null });
-
       const newTask: Task = {
         createdOn: Date.now(),
         description: description ? description : "New Task",
@@ -32,6 +37,7 @@ export const store: AppStore = {
       };
 
       setTasksState((p) => [...p, newTask]);
+      setTimerState({ isStarted: false, startedAt: null, description: "" });
 
       chrome.action.setIcon({ path: "/icons/inactive_timer.png" });
     },
@@ -57,7 +63,6 @@ export const store: AppStore = {
 export type AppStore = {
   timer: {
     state: TimerState;
-    start: () => void;
     end: ({
       description,
       duration,
@@ -65,6 +70,8 @@ export type AppStore = {
       description: string;
       duration: number;
     }) => void;
+    start: () => void;
+    updateTaskDescription: (description: string) => void;
   };
   taskList: {
     state: TasksState;
@@ -85,6 +92,7 @@ export type AppStore = {
 type TimerState = {
   isStarted: Boolean;
   startedAt: number | null;
+  description: string;
 };
 type TasksState = Task[];
 type Task = {
