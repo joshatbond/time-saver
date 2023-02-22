@@ -44,7 +44,7 @@ export const store: AppStore = {
         (task) => task.id === id,
         produce((task) => {
           if (description) task.description = description;
-          if (task.duration) task.duration = duration;
+          if (duration) task.duration = duration;
         })
       );
     },
