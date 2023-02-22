@@ -1,9 +1,9 @@
 import { createSignal, For } from "solid-js";
 import Timer from "./components/Timer";
-import { useTask } from "./utils/store";
+import { useAppContext } from "./utils/AppContext";
 
 export default function Popup() {
-  const { tasks } = useTask();
+  const { taskList } = useAppContext();
 
   return (
     <div class="w-[400px] bg-black text-white min-h-24 p-4 space-y-12">
@@ -13,11 +13,11 @@ export default function Popup() {
           <h2 class="text-2xl mb-4">
             Recent Tasks
             {durationToHours(
-              tasks.state.reduce((a, v) => (a += v.duration), 0)
+              taskList.state.reduce((a, v) => (a += v.duration), 0)
             ) === "0.00" ? null : (
               <span class="ml-4 text-base rounded-full px-2 py-1 bg-green-800">
                 {`${durationToHours(
-                  tasks.state.reduce((a, v) => (a += v.duration), 0)
+                  taskList.state.reduce((a, v) => (a += v.duration), 0)
                 )} hours`}
               </span>
             )}
@@ -25,13 +25,13 @@ export default function Popup() {
 
           <button
             class="px-4 py-2 bg-red-800 hover:bg-red-700 focus:bg-red-700 active-bg-red-700 rounded"
-            onclick={tasks.clear}
+            onclick={taskList.clear}
           >
             Clear
           </button>
         </div>
         <div class="flex flex-col gap-4">
-          <For each={tasks.state}>
+          <For each={taskList.state}>
             {(task) => {
               const [isEditing, setIsEditing] = createSignal(false);
               let durationInput: HTMLInputElement;
@@ -41,7 +41,7 @@ export default function Popup() {
                 console.log("submitting form");
                 e.preventDefault();
 
-                tasks.update({
+                taskList.update({
                   id: task.id,
                   description: descriptionInput.value
                     ? descriptionInput.value

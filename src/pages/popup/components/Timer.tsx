@@ -1,8 +1,8 @@
 import { createSignal, onCleanup } from "solid-js";
-import { useTask } from "../utils/store";
+import { useAppContext } from "../utils/AppContext";
 
 export default function Timer() {
-  const { timer } = useTask();
+  const { timer } = useAppContext();
   let timeInterval: NodeJS.Timer;
   let inputEl: HTMLInputElement;
 

@@ -1,6 +1,6 @@
 import { render } from "solid-js/web";
 import Popup from "./Popup";
-import { TaskProvider } from "./utils/store";
+import { AppProvider } from "./utils/AppContext";
 
 const appContainer = document.querySelector("#app-container");
 if (!appContainer) {
@@ -9,9 +9,9 @@ if (!appContainer) {
 
 render(
   () => (
-    <TaskProvider>
+    <AppProvider>
       <Popup />
-    </TaskProvider>
+    </AppProvider>
   ),
   appContainer
 );
