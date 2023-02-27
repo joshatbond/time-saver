@@ -18,3 +18,11 @@ declare module "*.json" {
   const content: string;
   export default content;
 }
+
+declare module "solid-js/jsx-runtime" {
+  namespace JSX {
+    interface Directives {
+      clickOutside: () => void;
+    }
+  }
+}

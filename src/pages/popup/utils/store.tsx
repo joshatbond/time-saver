@@ -2,97 +2,74 @@ import { createId } from "@paralleldrive/cuid2";
 import { produce } from "solid-js/store";
 import createLocalStore from "./createLocalStore";
 
-const defaultTimerState: TimerState = {
-  isStarted: false,
-  startedAt: null,
-  description: "",
-};
 const defaultTasksState: TasksState = [];
-
-const [timerState, setTimerState] = createLocalStore(
-  "timer",
-  defaultTimerState
-);
 const [tasksState, setTasksState] = createLocalStore(
   "tasks",
   defaultTasksState
 );
 
 export const store: AppStore = {
-  timer: {
-    state: timerState,
-    updateTaskDescription: (description) => {
-      setTimerState(produce((p) => (p.description = description)));
-    },
-    start: () => {
-      setTimerState({ isStarted: true, startedAt: Date.now() });
-      chrome.action.setIcon({ path: "/icons/active_timer.png" });
-    },
-    end: ({ description, duration }) => {
-      const newTask: Task = {
-        createdOn: Date.now(),
-        description: description ? description : "New Task",
-        duration,
-        id: createId(),
-      };
+  state: tasksState,
+  addTask: () => {
+    const now = Date.now();
+    const newTask: Task = {
+      id: createId(),
+      createdOn: now,
+      startedAt: now,
+      duration: 0,
+      description: "New Task",
+    };
 
-      setTasksState((p) => [...p, newTask]);
-      setTimerState({ isStarted: false, startedAt: null, description: "" });
-
-      chrome.action.setIcon({ path: "/icons/inactive_timer.png" });
-    },
+    setTasksState((p) => [newTask, ...p]);
+    setActiveIcon(true);
   },
-  taskList: {
-    state: tasksState,
-    clear: () => setTasksState([]),
-    removeTask: (id) => {
-      setTasksState((p) => p.filter((t) => t.id !== id));
-    },
-    update: ({ description, duration, id }) => {
-      setTasksState(
-        (task) => task.id === id,
-        produce((task) => {
-          if (description) task.description = description;
-          if (duration) task.duration = duration;
-        })
-      );
-    },
+  anyTimersRunning: () => tasksState.filter((t) => t.startedAt).length > 0,
+  clear: () => setTasksState([]),
+  endTaskTimer: (id) => {
+    const anyOtherTimersRunning =
+      tasksState.filter((t) => t.startedAt && t.id !== id).length > 0;
+
+    if (!anyOtherTimersRunning) setActiveIcon(false);
+
+    setTasksState(
+      (task) => task.id === id,
+      produce((task) => {
+        task.duration = task.duration + (Date.now() - task.startedAt);
+        task.startedAt = null;
+      })
+    );
+  },
+  removeTask: (id) => setTasksState((p) => p.filter((t) => t.id !== id)),
+  startTaskTimer: (id) => {
+    setActiveIcon(true);
+    setTasksState(
+      (task) => task.id === id,
+      produce((task) => (task.startedAt = Date.now()))
+    );
+  },
+  updateTaskDescription: (id, description) => {
+    setTasksState(
+      (task) => task.id === id,
+      produce((task) => (task.description = description))
+    );
   },
 };
+
+function setActiveIcon(flag: boolean) {
+  chrome.action.setIcon({
+    path: flag ? "/icons/active_timer.png" : "/icons/inactive_timer.png",
+  });
+}
 
 export type AppStore = {
-  timer: {
-    state: TimerState;
-    end: ({
-      description,
-      duration,
-    }: {
-      description: string;
-      duration: number;
-    }) => void;
-    start: () => void;
-    updateTaskDescription: (description: string) => void;
-  };
-  taskList: {
-    state: TasksState;
-    clear: () => void;
-    removeTask: (id: string) => void;
-    update: ({
-      id,
-      description,
-      duration,
-    }: {
-      id: string;
-      description?: string;
-      duration?: number;
-    }) => void;
-  };
-};
-
-type TimerState = {
-  isStarted: Boolean;
-  startedAt: number | null;
-  description: string;
+  state: TasksState;
+  addTask: () => void;
+  anyTimersRunning: () => boolean;
+  clear: () => void;
+  endTaskTimer: (id: string) => void;
+  removeTask: (id: string) => void;
+  startTaskTimer: (id: string) => void;
+  updateTaskDescription: (id: string, description: string) => void;
 };
 type TasksState = Task[];
 type Task = {
@@ -100,4 +77,5 @@ type Task = {
   description: string;
   duration: number;
   id: string;
+  startedAt: number | null;
 };
