@@ -1,17 +1,42 @@
-import { createSignal, JSXElement, onCleanup, Show } from "solid-js";
+import {
+  createEffect,
+  createSignal,
+  JSXElement,
+  onCleanup,
+  Show,
+} from "solid-js";
 import { useAppContext } from "../utils/AppContext";
 import { AppStore } from "../utils/store";
 import { durationToHours, timeBetweenDates } from "../utils/TimeUtils";
 
 type Props = { task: AppStore["state"][number] };
 export default function TaskRow(props: Props) {
+  const { decrementTimer, incrementTimer } = useAppContext();
+
   return (
-    <div class="flex gap-4 text-white w-full items-baseline">
+    <div class="flex gap-4 relative text-white w-full items-center">
+      <div class="absolute inset-y-0 flex flex-col">
+        <button
+          class="hover:bg-neutral-100/70 w-4 hover:text-black"
+          onClick={() => incrementTimer(props.task.id)}
+        >
+          +
+        </button>
+        <button
+          class="hover:bg-neutral-100/70 w-4 hover:text-black"
+          onClick={() => decrementTimer(props.task.id)}
+        >
+          -
+        </button>
+      </div>
+
       <TaskTimer task={props.task} />
+
       <TaskDescription
         id={props.task.id}
         description={props.task.description}
       />
+
       <TaskRemoveButton id={props.task.id} />
     </div>
   );
@@ -31,16 +56,18 @@ function TaskTimer(props: Props) {
     setDuration(timeBetweenDates(time, props.task.duration));
     setTimeInterval();
   }
+
   function endTimer() {
     endTaskTimer(props.task.id);
     clearInterval(timeInterval);
     setDuration(null);
   }
+
   function setTimeInterval() {
     timeInterval = setInterval(() => {
       if (props.task.startedAt) {
         setDuration(
-          timeBetweenDates(props.task.startedAt as number, props.task.duration)
+          timeBetweenDates(props.task.startedAt, props.task.duration)
         );
       }
     }, 1000);
@@ -48,10 +75,12 @@ function TaskTimer(props: Props) {
 
   onCleanup(() => clearInterval(timeInterval));
 
+  createEffect(() => {});
+
   return (
     <button
       onClick={() => (!!props.task.startedAt ? endTimer() : startTimer())}
-      class={`rounded outline-none px-6 py-2 min-w-28 select-none ${
+      class={`rounded outline-none ml-4 px-6 py-2 min-w-28 select-none ${
         !!props.task.startedAt
           ? "bg-green-800 w-28 hover:bg-green-700 focus:bg-green-700 active:bg-green-700"
           : "border border-white hover:bg-white/20 focus:bg-white/20 active:bg-white/20"
@@ -92,6 +121,7 @@ function EditableField(props: {
     setIsEditing(false);
     props.onUpdate(inputEl.value);
   }
+
   function handleKeyDown(e: KeyboardEvent) {
     if (e.key === "Enter") handleBlur();
     if (e.key === "Escape") {
@@ -100,6 +130,14 @@ function EditableField(props: {
       setIsEditing(false);
     }
   }
+
+  createEffect(() => {
+    if (isEditing()) {
+      inputEl.focus();
+      inputEl.select();
+    }
+  });
+
   return (
     <Show when={isEditing()} fallback={props.fallback}>
       <input

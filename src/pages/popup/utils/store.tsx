@@ -2,6 +2,7 @@ import { createId } from "@paralleldrive/cuid2";
 import { produce } from "solid-js/store";
 import createLocalStore from "./createLocalStore";
 
+const FIFTEEN_MINUTES = 1000 * 60 * 15;
 const defaultTasksState: TasksState = [];
 const [tasksState, setTasksState] = createLocalStore(
   "tasks",
@@ -25,6 +26,18 @@ export const store: AppStore = {
   },
   anyTimersRunning: () => tasksState.filter((t) => t.startedAt).length > 0,
   clear: () => setTasksState([]),
+  decrementTimer: (id) => {
+    console.log("decrementing");
+    setTasksState(
+      (task) => task.id === id,
+      produce((task) => {
+        console.log("here");
+        task.duration =
+          task.duration < FIFTEEN_MINUTES ? 0 : task.duration - FIFTEEN_MINUTES;
+        console.log(task.duration);
+      })
+    );
+  },
   endTaskTimer: (id) => {
     const anyOtherTimersRunning =
       tasksState.filter((t) => t.startedAt && t.id !== id).length > 0;
@@ -36,6 +49,17 @@ export const store: AppStore = {
       produce((task) => {
         task.duration = task.duration + (Date.now() - task.startedAt);
         task.startedAt = null;
+      })
+    );
+  },
+  incrementTimer: (id) => {
+    console.log("incrementing");
+    setTasksState(
+      (task) => task.id === id,
+      produce((task) => {
+        console.log(task.duration);
+        task.duration += FIFTEEN_MINUTES;
+        console.log(task.duration);
       })
     );
   },
@@ -66,7 +90,9 @@ export type AppStore = {
   addTask: () => void;
   anyTimersRunning: () => boolean;
   clear: () => void;
+  decrementTimer: (id: string) => void;
   endTaskTimer: (id: string) => void;
+  incrementTimer: (id: string) => void;
   removeTask: (id: string) => void;
   startTaskTimer: (id: string) => void;
   updateTaskDescription: (id: string, description: string) => void;
