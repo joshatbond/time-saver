@@ -1,19 +1,19 @@
 import { For } from "solid-js";
 import { useAppContext } from "../utils/AppContext";
-import { AppStore } from "../utils/store";
 import { durationToHours } from "../utils/TimeUtils";
+import { AppStore } from "../utils/store";
+
 import TaskRow from "./TaskRow";
 
-type Props = {};
-export default function TaskList(props: Props) {
+export default function TaskList() {
   const { state, clear, addTask } = useAppContext();
 
   return (
     <>
-      <div class="flex justify-between items-center select-none">
+      <div class="flex select-none items-center justify-between">
         <button
-          class="px-4 flex gap-2 justify-center items-center mr-4 py-2 bg-green-800 hover:bg-green-700 focus:bg-green-700 active-bg-green-700 rounded"
-          onclick={() => addTask()}
+          class="mr-4 flex items-center justify-center gap-2 rounded bg-green-800 px-4 py-2 hover:bg-green-700 focus:bg-green-700 active:bg-green-700"
+          onClick={() => addTask()}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -21,7 +21,7 @@ export default function TaskList(props: Props) {
             viewBox="0 0 24 24"
             stroke-width="1.5"
             stroke="currentColor"
-            class="w-4 h-4"
+            class="h-4 w-4"
           >
             <path
               stroke-linecap="round"
@@ -31,9 +31,10 @@ export default function TaskList(props: Props) {
           </svg>
           Add a New Task
         </button>
+
         <button
-          class="px-4 flex gap-2 justify-center items-center py-2 border border-transparent hover:border-red-700 focus:border-red-700 active:border-red-700 rounded outline-none"
-          onclick={clear}
+          class="flex items-center justify-center gap-2 rounded border border-transparent px-4 py-2 outline-none hover:border-red-700 focus:border-red-700 active:border-red-700"
+          onClick={clear}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -41,7 +42,7 @@ export default function TaskList(props: Props) {
             viewBox="0 0 24 24"
             stroke-width="1.5"
             stroke="currentColor"
-            class="w-4 h-4"
+            class="h-4 w-4"
           >
             <path
               stroke-linecap="round"
@@ -55,19 +56,23 @@ export default function TaskList(props: Props) {
 
       <div class="flex flex-col gap-4">
         {state.length === 0 ? null : <span class="text-lg">Today</span>}
+
         {durationReducer(state.filter(getToday)) === "0.00" ? null : (
           <div class="text-lg">{`${durationReducer(state)} hours`}</div>
         )}
+
         <For each={state.filter(getToday)}>
           {(task) => <TaskRow task={task} />}
         </For>
       </div>
+
       <div class="flex flex-col gap-4">
         {durationReducer(state.filter(getYesterday)) === "0.00" ? null : (
           <div class="text-lg">{`Yesterday: ${durationReducer(
             state
           )} hours`}</div>
         )}
+
         <For each={state.filter(getYesterday)}>
           {(task) => <TaskRow task={task} />}
         </For>
